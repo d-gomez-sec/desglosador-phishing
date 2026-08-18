@@ -2,8 +2,8 @@
 
 Pega el texto de un mensaje sospechoso y te señala, una por una, las técnicas de manipulación que usa y por qué funcionan.
 
-**Qué resuelve:** en lugar de dar un veredicto opaco de "esto es phishing", muestra dónde está el engaño dentro del propio texto, para que quien lo use aprenda a reconocerlo sin la herramienta.
-**Por qué importa:** el eslabón que decide si un fraude prospera es la persona que lee el mensaje. Entrenar esa lectura escala mejor que cualquier filtro.
+**Qué hace:** en lugar de dar un veredicto opaco de "esto es phishing", muestra dónde está el engaño dentro del propio texto, para que quien lo use aprenda a reconocerlo sin la herramienta.
+**Nota honesta:** el eslabón que decide si un fraude prospera es la persona que lee el mensaje. Entrenar esa lectura es más valioso que cualquier herramienta.
 
 ---
 
