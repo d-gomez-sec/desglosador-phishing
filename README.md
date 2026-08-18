@@ -1,3 +1,4 @@
+**▶ Pruébala aquí:** https://d-gomez-sec.github.io/desglosador-phishing/
 # Desglosador de Phishing
 
 Pega el texto de un mensaje sospechoso y te señala, una por una, las técnicas de manipulación que usa y por qué funcionan.
@@ -48,7 +49,7 @@ Base en español con las señales más frecuentes en inglés, porque muchos frau
 
 ## Uso
 
-Abre `desglosador-phishing.html` en cualquier navegador. Un solo archivo, sin instalación, sin conexión y sin dependencias. El texto analizado no sale del dispositivo.
+Abre `index.html` en cualquier navegador. Un solo archivo, sin instalación, sin conexión y sin dependencias. El texto analizado no sale del dispositivo.
 
 Incluye un botón que carga el caso real de ejemplo, para ver cómo razona antes de usarlo con mensajes propios.
 
