@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<title>Desglosador de Phishing · Aprende a leer el engaño</title>
+<style>
+  :root{
+    --fondo:#0d1117; --tinta:#c9d1d9; --panel:#161b22; --linea:#2a313c;
+    --verde:#3fb950; --verde-suave:#12261a;
+    --ambar:#d29922; --rojo:#f85149; --azul:#58a6ff; --violeta:#bc8cff;
+    --tenue:#8b949e;
+    --mono:'Courier New',ui-monospace,monospace;
+    --sans:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--fondo);color:var(--tinta);font-family:var(--sans);min-height:100vh;padding:1.5rem 1rem 4rem}
+  .contenedor{max-width:880px;margin:0 auto}
+  header{text-align:center;margin-bottom:1.6rem}
+  h1{font-size:1.55rem;color:#e6edf3;letter-spacing:-.01em}
+  h1::before{content:"> ";color:var(--verde);font-family:var(--mono)}
+  header p{color:var(--tenue);font-size:.95rem;margin-top:.5rem;line-height:1.5;max-width:600px;margin:.5rem auto 0}
+
+  .panel{background:var(--panel);border:1px solid var(--linea);border-radius:16px;padding:1.3rem;margin-bottom:1.1rem;box-shadow:0 1px 2px rgba(0,0,0,.3),0 6px 18px rgba(0,0,0,.25)}
+  label.tit{display:block;font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--verde);margin-bottom:.7rem}
+  textarea{width:100%;min-height:180px;resize:vertical;font-family:var(--mono);font-size:.88rem;line-height:1.55;border:1px solid var(--linea);border-radius:10px;padding:.8rem;background:#0d1117;color:var(--tinta)}
+  textarea:focus{outline:2px solid var(--verde)}
+  .botones{display:flex;gap:.6rem;margin-top:.8rem;flex-wrap:wrap}
+  button{font-family:var(--sans);font-weight:600;font-size:.88rem;padding:.6rem 1.3rem;border-radius:10px;cursor:pointer;border:1px solid transparent}
+  .btn-pri{background:var(--verde);color:#0d1117}
+  .btn-pri:hover{background:#4fd162}
+  .btn-sec{background:#21262d;color:var(--tinta);border-color:var(--linea)}
+  .btn-sec:hover{background:#2d333b;border-color:var(--verde)}
+  button:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+
+  #resultado{display:none}
+
+  /* Texto resaltado */
+  .lienzo{font-family:var(--mono);font-size:.88rem;line-height:1.7;white-space:pre-wrap;word-break:break-word;background:#0d1117;border:1px solid var(--linea);border-radius:10px;padding:1rem}
+  mark{border-radius:3px;padding:.05rem .15rem;color:#e6edf3}
+  .m-urgencia{background:rgba(210,153,34,.28);border-bottom:2px solid var(--ambar)}
+  .m-amenaza{background:rgba(248,81,73,.30);border-bottom:2px solid var(--rojo)}
+  .m-autoridad{background:rgba(88,166,255,.26);border-bottom:2px solid var(--azul)}
+  .m-cebo{background:rgba(188,140,255,.26);border-bottom:2px solid var(--violeta)}
+  .m-datos{background:rgba(248,81,73,.40);border-bottom:2px solid var(--rojo)}
+  .m-generico{background:rgba(139,148,158,.28);border-bottom:2px solid var(--tenue)}
+
+  .leyenda{display:flex;flex-wrap:wrap;gap:.5rem .9rem;margin-top:.8rem;font-size:.74rem;color:var(--tenue)}
+  .leyenda span{display:flex;align-items:center;gap:.35rem}
+  .leyenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+  /* Tarjetas de señal */
+  .senal{border:1px solid var(--linea);border-left-width:4px;border-radius:0 10px 10px 0;background:#0d1117;padding:.85rem 1rem;margin-top:.7rem}
+  .senal.f-urgencia{border-left-color:var(--ambar)} .senal.f-amenaza{border-left-color:var(--rojo)}
+  .senal.f-autoridad{border-left-color:var(--azul)} .senal.f-cebo{border-left-color:var(--violeta)}
+  .senal.f-datos{border-left-color:var(--rojo)} .senal.f-generico{border-left-color:var(--tenue)}
+  .senal .cab{display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem}
+  .senal .cab .emo{font-size:1.1rem}
+  .senal .cab h3{font-size:.95rem;color:#e6edf3}
+  .senal .porque{font-size:.85rem;line-height:1.5;color:var(--tinta)}
+  .senal .trozos{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+  .senal .trozo{font-family:var(--mono);font-size:.76rem;background:#161b22;border:1px solid var(--linea);border-radius:6px;padding:.2rem .5rem;color:var(--tenue)}
+
+  /* Enlaces */
+  .enlace-tar{border:1px solid var(--linea);border-radius:10px;background:#0d1117;padding:.85rem 1rem;margin-top:.7rem}
+  .enlace-tar .url{font-family:var(--mono);font-size:.82rem;color:var(--verde);word-break:break-all;margin-bottom:.4rem}
+  .enlace-tar .bandera{display:flex;gap:.5rem;align-items:flex-start;font-size:.83rem;line-height:1.45;margin-top:.35rem}
+  .enlace-tar .bandera .p{flex-shrink:0}
+  .b-roja .p{color:var(--rojo)} .b-ambar .p{color:var(--ambar)} .b-ok .p{color:var(--verde)}
+  .enlace-tar .sug{font-size:.8rem;color:var(--tenue);margin-top:.5rem;border-top:1px dashed var(--linea);padding-top:.5rem}
+
+  h2.seccion{font-size:1.05rem;color:#e6edf3;margin:1.4rem 0 .2rem}
+  .seccion-desc{font-size:.83rem;color:var(--tenue);line-height:1.45;margin-bottom:.4rem}
+
+  .resumen{border:2px solid var(--verde);background:var(--verde-suave);border-radius:12px;padding:1rem 1.2rem;margin-top:1.4rem}
+  .resumen.alerta{border-color:var(--rojo);background:rgba(248,81,73,.12)}
+  .resumen h3{font-size:1rem;margin-bottom:.4rem;color:#e6edf3}
+  .resumen p{font-size:.9rem;line-height:1.55}
+
+  .aviso{display:flex;gap:.7rem;align-items:flex-start;background:rgba(210,153,34,.12);border:1px solid var(--ambar);border-radius:10px;padding:.75rem .9rem;font-size:.82rem;line-height:1.5;color:#e3b341;margin-top:1.1rem}
+
+  footer{margin-top:2rem;font-size:.78rem;color:var(--tenue);text-align:center;line-height:1.6}
+  footer code{font-family:var(--mono);color:var(--verde)}
+</style>
+</head>
+<body>
+<div class="contenedor">
+  <header>
+    <h1>Desglosador de Phishing</h1>
+    <p>Pega el texto de un mensaje sospechoso y te señalo las técnicas de manipulación que usa, una por una, para que aprendas a reconocerlas tú. No te doy un veredicto: te enseño a leerlo. Todo se analiza en tu dispositivo.</p>
+  </header>
+
+  <div class="panel">
+    <label class="tit" for="entrada">Pega aquí el mensaje completo</label>
+    <textarea id="entrada" placeholder="Copia el correo o DM tal cual: asunto, cuerpo, enlaces... todo junto. La herramienta separa y analiza lo que encuentre."></textarea>
+    <div class="botones">
+      <button class="btn-pri" id="btnAnalizar">Desglosar</button>
+      <button class="btn-sec" id="btnEjemplo">Cargar ejemplo real</button>
+      <button class="btn-sec" id="btnLimpiar">Limpiar</button>
+    </div>
+  </div>
+
+  <div id="resultado" class="panel"></div>
+
+  <footer>
+    Herramienta local y sin conexión · analiza patrones, no lee la mente:<br>
+    un fraude bien escrito puede no disparar señales. Úsala como entrenamiento, no como garantía.<br>
+    <code>&gt; lee el engaño, no lo sufras</code>
+  </footer>
+</div>
+
+<script>
+"use strict";
+var $ = function(id){ return document.getElementById(id); };
+
+// Quita acentos SIN cambiar la longitud (para que los índices de los match cuadren con el texto original)
+function normaliza(s){
+  var mapa = {"á":"a","é":"e","í":"i","ó":"o","ú":"u","ü":"u","ñ":"n",
+              "Á":"A","É":"E","Í":"I","Ó":"O","Ú":"U","Ü":"U","Ñ":"N"};
+  return s.replace(/[áéíóúüñÁÉÍÓÚÜÑ]/g, function(c){ return mapa[c]; }).toLowerCase();
+}
+function escaparRegex(s){ return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function escaparHTML(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+// Catálogo de técnicas. Cada patrón se busca en el texto normalizado (sin acentos, minúsculas).
+var CATALOGO = [
+  { fam:"urgencia", emo:"⏰", nombre:"Urgencia y presión temporal",
+    porque:"Te mete prisa para que actúes antes de pensar. Si no hay tiempo para dudar, no hay tiempo para descubrir el engaño.",
+    patrones:["urgente","inmediat","cuanto antes","de inmediato","ahora mismo","antes de que","ultima oportunidad","ultimo aviso","cada voto cuenta","no tardes","date prisa","caduca","expira","en 24 horas","en 48 horas","solo hoy","tiempo limitado","act now","urgent","immediately","expires","last chance","as soon as possible","don't delay","right now"] },
+  { fam:"amenaza", emo:"⚠️", nombre:"Miedo y amenaza",
+    porque:"Te asusta con una consecuencia (perder la cuenta, una multa) para que la prisa por evitarla te nuble el juicio.",
+    patrones:["cuenta suspendida","cuenta bloquead","sera eliminada","sera suspendida","actividad sospechosa","acceso no autorizado","inicio de sesion sospechoso","multa","sancion","penalizacion","problema con tu","verifica o","de lo contrario","perderas","suspended","unauthorized","account locked","suspicious activity","will be deleted","will be closed"] },
+  { fam:"autoridad", emo:"🏢", nombre:"Autoridad y suplantación de marca",
+    porque:"Se apoya en el nombre de una empresa u organismo de confianza para que bajes la guardia. La marca la pone quien escribe; comprueba siempre si el enlace le corresponde.",
+    patrones:["spotify","google","apple","icloud","microsoft","amazon","paypal","correos","netflix","instagram","facebook","whatsapp","meta","hacienda","agencia tributaria","dgt","endesa","iberdrola","banco","bbva","santander","caixa","seur","dhl","fedex","policia","guardia civil"] },
+  { fam:"cebo", emo:"🎁", nombre:"Premio o cebo emocional",
+    porque:"Te ofrece algo bueno (un premio, un reembolso) o apela a tus sentimientos para que quieras hacer clic sin comprobar nada.",
+    patrones:["has ganado","enhorabuena","felicidades","premio","sorteo","gratis","de regalo","reembolso","devolucion","has sido seleccionad","reclama tu","apoyarme","apoyarle","ayudame","vota por mi","votando por mi","te agradeceria","you won","congratulations","free gift","you have been selected","claim your"] },
+  { fam:"datos", emo:"🔑", nombre:"Petición de datos o acción sensible",
+    porque:"Te pide credenciales, datos bancarios o que inicies sesión. Ninguna empresa legítima te pide esto por mensaje. Es el objetivo final del robo.",
+    patrones:["introduce tus datos","confirma tu contrasena","verifica tu cuenta","actualiza tus datos","datos bancarios","numero de tarjeta","tu contrasena","codigo de verificacion","introduce tu pin","inicia sesion aqui","confirm your password","verify your account","update your details","enter your password","log in here"] },
+  { fam:"generico", emo:"👤", nombre:"Saludo genérico o impersonal",
+    porque:"No usa tu nombre porque el mismo mensaje se envía a miles de personas. Una comunicación real de tu banco suele dirigirse a ti por tu nombre.",
+    patrones:["estimado cliente","estimado usuario","querido usuario","hola usuario","estimado/a","apreciado cliente","dear customer","dear user","dear client"] }
+];
+
+// Marcas y sus dominios oficiales (para el careo texto <-> enlace)
+var MARCAS = {
+  "spotify":["spotify.com"], "google":["google.com","google.es","withgoogle.com"],
+  "apple":["apple.com","icloud.com"], "microsoft":["microsoft.com","live.com","outlook.com"],
+  "amazon":["amazon.com","amazon.es"], "paypal":["paypal.com","paypal.me"],
+  "correos":["correos.es"], "netflix":["netflix.com"], "instagram":["instagram.com"],
+  "facebook":["facebook.com","fb.com"], "meta":["meta.com"], "whatsapp":["whatsapp.com"],
+  "hacienda":["agenciatributaria.es","agenciatributaria.gob.es"], "dgt":["dgt.es"],
+  "bbva":["bbva.es"], "santander":["santander.es"], "netflix ":["netflix.com"]
+};
+var ACORTADORES = ["bit.ly","tinyurl.com","t.co","goo.gl","ow.ly","cutt.ly","rebrand.ly","shorturl.at","rb.gy","t.ly","tiny.cc","lnkd.in","s.id","buff.ly","is.gd","v.gd"];
+
+function analizar(){
+  var texto = $("entrada").value;
+  if (!texto.trim()){ alert("Pega primero el texto del mensaje."); return; }
+  var norm = normaliza(texto);
+
+  // 1) Buscar señales de manipulación
+  var rangos = [];                 // {ini, fin, fam} para resaltar
+  var porFamilia = {};             // fam -> {def, trozos:Set}
+  CATALOGO.forEach(function(def){
+    def.patrones.forEach(function(pat){
+      var re = new RegExp(escaparRegex(normaliza(pat)), "g");
+      var m;
+      while ((m = re.exec(norm)) !== null){
+        var ini = m.index, fin = ini + m[0].length;
+        rangos.push({ini:ini, fin:fin, fam:def.fam});
+        if (!porFamilia[def.fam]) porFamilia[def.fam] = {def:def, trozos:{}};
+        porFamilia[def.fam].trozos[texto.slice(ini, fin)] = true;
+        if (m[0].length === 0) re.lastIndex++;
+      }
+    });
+  });
+
+  // 2) Extraer enlaces
+  var enlaces = extraerEnlaces(texto);
+
+  // 3) Careo marca <-> enlace
+  var marcasMencionadas = [];
+  Object.keys(MARCAS).forEach(function(marca){
+    if (new RegExp("\\b" + escaparRegex(marca.trim()) + "\\b").test(norm))
+      marcasMencionadas.push(marca.trim());
+  });
+
+  pintar(texto, rangos, porFamilia, enlaces, marcasMencionadas);
+}
+
+function extraerEnlaces(texto){
+  var re = /((https?:\/\/)?([a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}(?:\/[^\s]*)?)/gi;
+  var vistos = {}, lista = [], m;
+  while ((m = re.exec(texto)) !== null){
+    var bruto = m[1].replace(/[).,;]+$/, "");           // quita puntuación final pegada
+    var clave = bruto.toLowerCase();
+    if (!vistos[clave]){ vistos[clave] = true; lista.push(bruto); }
+  }
+  return lista;
+}
+function dominioDe(url){
+  var d = url.replace(/^https?:\/\//i, "").split("/")[0].toLowerCase();
+  return d;
+}
+function registrable(dom){
+  var p = dom.split(".");
+  return p.length <= 2 ? dom : p.slice(-2).join(".");
+}
+
+function pintar(texto, rangos, porFamilia, enlaces, marcas){
+  var cont = $("resultado");
+  var html = "";
+
+  // --- Texto resaltado ---
+  html += '<h2 class="seccion">El mensaje, marcado</h2>';
+  html += '<p class="seccion-desc">Cada color es una familia de técnica. Pasa la vista por lo resaltado.</p>';
+  html += '<div class="lienzo">' + construirResaltado(texto, rangos) + '</div>';
+  html += '<div class="leyenda">' +
+    '<span><i style="background:var(--ambar)"></i>Urgencia</span>' +
+    '<span><i style="background:var(--rojo)"></i>Amenaza / datos</span>' +
+    '<span><i style="background:var(--azul)"></i>Autoridad</span>' +
+    '<span><i style="background:var(--violeta)"></i>Cebo</span>' +
+    '<span><i style="background:var(--tenue)"></i>Saludo genérico</span></div>';
+
+  // --- Señales explicadas ---
+  var familiasPresentes = Object.keys(porFamilia);
+  if (familiasPresentes.length){
+    html += '<h2 class="seccion">Qué técnicas usa y por qué funcionan</h2>';
+    // Orden fijo por gravedad
+    ["datos","amenaza","urgencia","cebo","autoridad","generico"].forEach(function(fam){
+      if (!porFamilia[fam]) return;
+      var o = porFamilia[fam], def = o.def;
+      var trozos = Object.keys(o.trozos).map(function(t){
+        return '<span class="trozo">' + escaparHTML(t) + '</span>';
+      }).join("");
+      html += '<div class="senal f-' + fam + '">' +
+        '<div class="cab"><span class="emo">' + def.emo + '</span><h3>' + escaparHTML(def.nombre) + '</h3></div>' +
+        '<div class="porque">' + escaparHTML(def.porque) + '</div>' +
+        '<div class="trozos">' + trozos + '</div></div>';
+    });
+  }
+
+  // --- Enlaces ---
+  html += '<h2 class="seccion">Enlaces encontrados</h2>';
+  if (!enlaces.length){
+    html += '<p class="seccion-desc">No se detectaron enlaces en el texto.</p>';
+  } else {
+    enlaces.forEach(function(u){
+      html += tarjetaEnlace(u, marcas);
+    });
+  }
+
+  // --- Careo marca vs enlace (la señal estrella) ---
+  var desajuste = detectarDesajuste(enlaces, marcas);
+
+  // --- Resumen final ---
+  html += construirResumen(porFamilia, enlaces, marcas, desajuste);
+
+  html += '<div class="aviso"><span>⚠</span><span>Esto analiza <b>patrones conocidos</b>, no entiende el mensaje como un humano. La ausencia de señales no garantiza que sea seguro: un engaño bien redactado puede pasar limpio. Y si hay un enlace, no lo abras para comprobarlo — pásalo antes por un expansor de enlaces.</span></div>';
+
+  cont.innerHTML = html;
+  cont.style.display = "block";
+  cont.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
+function construirResaltado(texto, rangos){
+  if (!rangos.length) return escaparHTML(texto);
+  rangos.sort(function(a,b){ return a.ini - b.ini || b.fin - a.fin; });
+  var out = "", cursor = 0;
+  rangos.forEach(function(r){
+    if (r.ini < cursor) return;                 // solapado: se ignora
+    out += escaparHTML(texto.slice(cursor, r.ini));
+    out += '<mark class="m-' + r.fam + '">' + escaparHTML(texto.slice(r.ini, r.fin)) + '</mark>';
+    cursor = r.fin;
+  });
+  out += escaparHTML(texto.slice(cursor));
+  return out;
+}
+
+function tarjetaEnlace(u, marcas){
+  var dom = dominioDe(u), reg = registrable(dom), banderas = [];
+  // Acortador
+  if (ACORTADORES.indexOf(reg) !== -1)
+    banderas.push(["b-ambar","▲","Es un <b>acortador</b> (" + escaparHTML(reg) + "): oculta el destino real. Expándelo antes de fiarte."]);
+  // http sin s
+  if (/^http:\/\//i.test(u))
+    banderas.push(["b-roja","■","Usa <b>http sin cifrar</b>: nadie serio pide datos por una conexión no segura."]);
+  // IP cruda
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(dom))
+    banderas.push(["b-roja","■","El destino es una <b>IP a pelo</b>, no un dominio con nombre. Muy raro en algo legítimo."]);
+  // Marca como subdominio pero no como dominio real
+  Object.keys(MARCAS).forEach(function(marca){
+    marca = marca.trim();
+    if (dom.indexOf(marca) !== -1 && reg.indexOf(marca) === -1)
+      banderas.push(["b-roja","■","Contiene «" + escaparHTML(marca) + "» en el subdominio, pero el dominio real es <b>" + escaparHTML(reg) + "</b>. Truco clásico de suplantación."]);
+  });
+  // Muchos guiones / dominio ruidoso
+  if ((reg.match(/-/g) || []).length >= 2)
+    banderas.push(["b-ambar","▲","El dominio tiene varios guiones: habitual en dominios fabricados para engañar."]);
+
+  if (!banderas.length)
+    banderas.push(["b-ok","●","Sin señales evidentes en el propio enlace. Aun así, no sabes a dónde redirige hasta expandirlo."]);
+
+  var bandHTML = banderas.map(function(b){
+    return '<div class="bandera ' + b[0] + '"><span class="p">' + b[1] + '</span><span>' + b[2] + '</span></div>';
+  }).join("");
+
+  return '<div class="enlace-tar"><div class="url">' + escaparHTML(u) + '</div>' + bandHTML +
+    '<div class="sug">Siguiente paso: pásalo por tu <b>expansor de enlaces</b> (a dónde lleva) y por tu <b>detector de homógrafos</b> (si el dominio imita una marca).</div></div>';
+}
+
+function detectarDesajuste(enlaces, marcas){
+  if (!marcas.length || !enlaces.length) return null;
+  var dominios = enlaces.map(function(u){ return registrable(dominioDe(u)); });
+  var sinRespaldo = [];
+  marcas.forEach(function(marca){
+    var oficiales = MARCAS[marca] || MARCAS[marca + " "] || [];
+    var cuadra = dominios.some(function(d){
+      return oficiales.some(function(of){ return d === of || d.endsWith("." + of); });
+    });
+    if (!cuadra) sinRespaldo.push(marca);
+  });
+  return sinRespaldo.length ? sinRespaldo : null;
+}
+
+function construirResumen(porFamilia, enlaces, marcas, desajuste){
+  var fams = Object.keys(porFamilia);
+  var nombres = { urgencia:"urgencia", amenaza:"miedo", autoridad:"autoridad prestada",
+                  cebo:"cebo emocional", datos:"petición de datos", generico:"saludo impersonal" };
+  var lista = fams.map(function(f){ return nombres[f]; });
+
+  var alerta = false, frase = "";
+
+  if (desajuste){
+    alerta = true;
+    frase = "El mensaje invoca a <b>" + escaparHTML(desajuste.join(", ")) +
+      "</b> pero el enlace no lleva a ningún dominio oficial de esa marca. Ese desajuste entre lo que <i>dice ser</i> y a dónde <i>te lleva</i> es la firma del fraude por suplantación. ";
+  }
+
+  if (fams.length === 0 && !desajuste){
+    return '<div class="resumen"><h3>Pocas señales detectadas</h3><p>Este mensaje apenas dispara patrones conocidos. Eso no lo vuelve seguro: comprueba siempre el remitente y a dónde llevan los enlaces antes de actuar.</p></div>';
+  }
+
+  var combo = "";
+  if (lista.length) combo = "Combina " + lista.join(" + ") + ". ";
+  if (porFamilia["datos"]) { alerta = true; frase += "Además pide datos sensibles, que es el objetivo final del robo. "; }
+  else if (fams.length >= 3) alerta = true;
+
+  var cierre = alerta
+    ? "Trátalo como un intento de fraude: no toques los enlaces ni respondas."
+    : "Presenta varias señales de manipulación; desconfía y verifica por un canal oficial antes de actuar.";
+
+  return '<div class="resumen' + (alerta ? " alerta" : "") + '">' +
+    '<h3>' + (alerta ? "Patrón de fraude" : "Señales a tener en cuenta") + '</h3>' +
+    '<p>' + combo + frase + cierre + '</p></div>';
+}
+
+// --- Ejemplo real (el caso del "concurso de Spotify") ---
+var EJEMPLO = "¡Hola! Espero que estés muy bien.\n\n" +
+"Estoy postulándome para ser copresentador(a) de un evento de pódcast organizado por Spotify en colaboración con Google en toda Europa, y me enorgullece ser uno de los pocos participantes que representan a España 🇪🇸.\n\n" +
+"Te agradecería muchísimo si pudieras apoyarme votando por mí a través del siguiente enlace. ¡Cada voto cuenta!\n\n" +
+"📩 modely.orzn.app/y7opdn5l/\n\n" +
+"¡Muchísimas gracias por tu apoyo! ❤️";
+
+$("btnAnalizar").addEventListener("click", analizar);
+$("btnEjemplo").addEventListener("click", function(){ $("entrada").value = EJEMPLO; analizar(); });
+$("btnLimpiar").addEventListener("click", function(){
+  $("entrada").value = ""; $("resultado").style.display = "none"; $("entrada").focus();
+});
+</script>
+</body>
+</html>
