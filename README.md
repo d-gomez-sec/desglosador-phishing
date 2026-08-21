@@ -6,6 +6,8 @@ Pega el texto de un mensaje sospechoso y te señala, una por una, las técnicas 
 **Qué hace:** en lugar de dar un veredicto opaco de "esto es phishing", muestra dónde está el engaño dentro del propio texto, para que quien lo use aprenda a reconocerlo sin la herramienta.
 **Nota honesta:** el eslabón que decide si un fraude prospera es la persona que lee el mensaje. Entrenar esa lectura es más valioso que cualquier herramienta.
 
+![Ejemplo de mensaje de phishing](docs/mensaje-phishing.png)
+
 ---
 
 ## Cómo funciona
