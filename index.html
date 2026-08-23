@@ -50,6 +50,40 @@
   .leyenda span{display:flex;align-items:center;gap:.35rem}
   .leyenda i{width:12px;height:12px;border-radius:3px;display:inline-block}
 
+  /* Selector de modo */
+  .modos{display:flex;gap:.5rem}
+  .modo{flex:1;background:#0d1117;color:var(--tenue);border:1px solid var(--linea);border-radius:10px;padding:.7rem .5rem;font-size:.88rem;font-weight:600;cursor:pointer;font-family:var(--sans)}
+  .modo.activo{background:var(--verde-suave);color:var(--verde);border-color:var(--verde)}
+  .modo:focus-visible{outline:3px solid var(--verde);outline-offset:2px}
+  input[type=text], select{width:100%;font-family:var(--mono);font-size:.88rem;border:1px solid var(--linea);border-radius:10px;padding:.65rem .75rem;background:#0d1117;color:var(--tinta)}
+  select{font-family:var(--sans)}
+  input[type=text]:focus, select:focus{outline:2px solid var(--verde)}
+  .pista-campo{font-size:.76rem;color:var(--tenue);margin-top:.3rem;line-height:1.4}
+
+  /* Análisis del remitente */
+  .remit{border:1px solid var(--linea);border-left-width:4px;border-radius:0 10px 10px 0;background:#0d1117;padding:.85rem 1rem;margin-top:.7rem}
+  .remit.r-mal{border-left-color:var(--rojo)} .remit.r-avisa{border-left-color:var(--ambar)}
+  .remit.r-ok{border-left-color:var(--verde)} .remit.r-info{border-left-color:var(--azul)}
+  .remit .tipo{font-size:.7rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--tenue);margin-bottom:.3rem}
+  .remit .val{font-family:var(--mono);font-size:.95rem;color:#e6edf3;margin-bottom:.4rem;word-break:break-all}
+  .remit .txt{font-size:.86rem;line-height:1.5}
+
+  /* Canal oficial */
+  .canal{border:2px solid var(--azul);background:rgba(88,166,255,.1);border-radius:12px;padding:1rem;margin-top:.8rem}
+  .canal h3{font-size:.95rem;color:#e6edf3;margin-bottom:.5rem}
+  .canal .linea{display:flex;gap:.6rem;align-items:flex-start;font-size:.85rem;line-height:1.5;margin-top:.45rem}
+  .canal .linea .p{flex-shrink:0;font-weight:800}
+  .canal .si .p{color:var(--verde)} .canal .no .p{color:var(--rojo)}
+  .canal .verificar{margin-top:.7rem;padding-top:.6rem;border-top:1px dashed var(--azul);font-size:.83rem;line-height:1.5;color:#a5d6ff}
+
+  /* Acciones */
+  .acciones{border:1px solid var(--linea);border-radius:12px;background:#0d1117;padding:1rem;margin-top:1.2rem}
+  .acciones h3{font-size:.95rem;color:#e6edf3;margin-bottom:.6rem}
+  .acciones ol{margin:0 0 0 1.1rem;font-size:.86rem;line-height:1.6}
+  .acciones li{margin-bottom:.4rem}
+  .acciones b{color:#e6edf3}
+  .acciones code{font-family:var(--mono);background:#161b22;border:1px solid var(--linea);border-radius:4px;padding:.05rem .35rem;color:var(--verde)}
+
   /* Tarjetas de señal */
   .senal{border:1px solid var(--linea);border-left-width:4px;border-radius:0 10px 10px 0;background:#0d1117;padding:.85rem 1rem;margin-top:.7rem}
   .senal.f-urgencia{border-left-color:var(--ambar)} .senal.f-amenaza{border-left-color:var(--rojo)}
@@ -88,11 +122,29 @@
 <div class="contenedor">
   <header>
     <h1>Desglosador de Phishing</h1>
-    <p>Pega el texto de un mensaje sospechoso y te señalo las técnicas de manipulación que usa, una por una, para que aprendas a reconocerlas tú. No te doy un veredicto: te enseño a leerlo. Todo se analiza en tu dispositivo.</p>
+    <p>Pega el texto de un mensaje sospechoso y te señalo las técnicas de manipulación que usa, una por una, para que aprendas a reconocerlas tú. Con modo específico para SMS. No te doy un veredicto: te enseño a leerlo. Todo se analiza en tu dispositivo.</p>
   </header>
 
   <div class="panel">
-    <label class="tit" for="entrada">Pega aquí el mensaje completo</label>
+    <label class="tit">¿Qué estás analizando?</label>
+    <div class="modos">
+      <button class="modo activo" data-modo="correo">✉️ Correo o mensaje</button>
+      <button class="modo" data-modo="sms">📱 SMS</button>
+    </div>
+
+    <div id="camposSMS" style="display:none">
+      <label class="tit" style="margin-top:1.1rem" for="remitente">¿De qué número o nombre viene?</label>
+      <input type="text" id="remitente" placeholder="+34 643 63 63 95, o AEAT, o 25000..." autocomplete="off">
+      <div class="pista-campo">Tal como aparece en el móvil. Si es un nombre en vez de un número, escríbelo igual.</div>
+
+      <label class="tit" style="margin-top:1.1rem" for="suplantado">¿Quién dice ser?</label>
+      <select id="suplantado">
+        <option value="">— Selecciona si lo reconoces —</option>
+      </select>
+      <div class="pista-campo">Te diré cómo se comunica de verdad ese organismo o empresa.</div>
+    </div>
+
+    <label class="tit" style="margin-top:1.1rem" for="entrada">Pega aquí el mensaje completo</label>
     <textarea id="entrada" placeholder="Copia el correo o DM tal cual: asunto, cuerpo, enlaces... todo junto. La herramienta separa y analiza lo que encuentre."></textarea>
     <div class="botones">
       <button class="btn-pri" id="btnAnalizar">Desglosar</button>
@@ -139,6 +191,14 @@ var CATALOGO = [
   { fam:"cebo", emo:"🎁", nombre:"Premio o cebo emocional",
     porque:"Te ofrece algo bueno (un premio, un reembolso) o apela a tus sentimientos para que quieras hacer clic sin comprobar nada.",
     patrones:["has ganado","enhorabuena","felicidades","premio","sorteo","gratis","de regalo","reembolso","devolucion","has sido seleccionad","reclama tu","apoyarme","apoyarle","ayudame","vota por mi","votando por mi","te agradeceria","you won","congratulations","free gift","you have been selected","claim your"] },
+
+  { fam:"cebo", emo:"👨‍👩‍👦", nombre:"Suplantación de un familiar",
+    porque:"Se hace pasar por un hijo o pariente con el móvil roto o un número nuevo. Funciona porque mezcla urgencia con cariño: te pide dinero antes de que puedas comprobar quién escribe. <b>Llama al número de siempre antes de hacer nada.</b>",
+    patrones:["hola mama","hola papa","soy tu hijo","soy tu hija","este es mi nuevo numero","tengo un numero nuevo","se me ha roto el movil","se me rompio el movil","perdi mi telefono","perdi el movil","guarda este numero","escribeme por whatsapp","necesito que me hagas un pago","puedes hacerme una transferencia","no puedo llamar"] },
+
+  { fam:"datos", emo:"🔢", nombre:"Petición de un código de verificación",
+    porque:"Un código de verificación es la llave de tu cuenta. Quien te lo pide está registrándose con tu número en ese momento. <b>No se comparte con nadie, bajo ninguna excusa.</b>",
+    patrones:["te envie un codigo","te llego un codigo","pasame el codigo","mandame el codigo","codigo por error","codigo de 6 digitos","reenviame el codigo","send me the code","verification code"] },
   { fam:"datos", emo:"🔑", nombre:"Petición de datos o acción sensible",
     porque:"Te pide credenciales, datos bancarios o que inicies sesión. Ninguna empresa legítima te pide esto por mensaje. Es el objetivo final del robo.",
     patrones:["introduce tus datos","confirma tu contrasena","verifica tu cuenta","actualiza tus datos","datos bancarios","numero de tarjeta","tu contrasena","codigo de verificacion","introduce tu pin","inicia sesion aqui","confirm your password","verify your account","update your details","enter your password","log in here"] },
@@ -158,6 +218,192 @@ var MARCAS = {
   "bbva":["bbva.es"], "santander":["santander.es"], "netflix ":["netflix.com"]
 };
 var ACORTADORES = ["bit.ly","tinyurl.com","t.co","goo.gl","ow.ly","cutt.ly","rebrand.ly","shorturl.at","rb.gy","t.ly","tiny.cc","lnkd.in","s.id","buff.ly","is.gd","v.gd"];
+
+/* ==========================================================
+   MODO SMS
+   ========================================================== */
+var MODO = "correo";
+
+/* Cómo se comunican de verdad los organismos y empresas más suplantados en España.
+   Lo que NUNCA hacen es lo que desmonta el fraude en segundos. */
+var CANALES = {
+  aeat: { nombre:"Agencia Tributaria (AEAT)",
+    dominios:["agenciatributaria.es","agenciatributaria.gob.es","sede.agenciatributaria.gob.es"],
+    si:["Avisa de que tienes una notificación, sin enlaces de pago ni de cobro",
+        "Te remite a la Sede Electrónica, donde entras tú con Cl@ve o certificado digital"],
+    no:["Nunca envía enlaces para cobrar una devolución",
+        "Nunca pide datos bancarios ni de tarjeta por SMS o correo",
+        "Nunca comunica desde un número de móvil personal"],
+    verificar:"Entra tú a la Sede Electrónica escribiendo la dirección a mano, o llama al 91 554 87 70. Las devoluciones se gestionan solas: nunca hay que reclamarlas por un enlace." },
+  correos: { nombre:"Correos / paquetería",
+    dominios:["correos.es","correosexpress.com","seur.com","dhl.com","mrw.es","gls-spain.es"],
+    si:["Avisa del estado de un envío que tú esperas",
+        "Da un localizador que puedes comprobar en su web oficial"],
+    no:["Nunca cobra tasas de aduana por SMS con enlace de pago",
+        "Nunca pide una cantidad pequeña 'para liberar el paquete'",
+        "Nunca pide datos de tarjeta por mensaje"],
+    verificar:"Copia el localizador y búscalo tú en la web oficial de la empresa. Si no esperabas ningún paquete, es fraude seguro." },
+  banco: { nombre:"Un banco (BBVA, Santander, CaixaBank...)",
+    dominios:["bbva.es","bancosantander.es","caixabank.es","ing.es","sabadell.com","unicaja.es","bankinter.com"],
+    si:["Avisa de movimientos, sin pedir que te identifiques desde el propio mensaje",
+        "Te pide que uses su app oficial"],
+    no:["Nunca pide claves, PIN, ni códigos de confirmación",
+        "Nunca envía enlaces para 'verificar' o 'reactivar' la cuenta",
+        "Nunca pide que muevas el dinero a una 'cuenta segura'"],
+    verificar:"Cuelga o cierra el mensaje y entra en tu app del banco, o llama al teléfono que aparece en el reverso de tu tarjeta. Si te llaman diciendo ser del banco y te meten prisa, es fraude." },
+  segsocial: { nombre:"Seguridad Social / SEPE",
+    dominios:["seg-social.es","sede.seg-social.gob.es","sepe.es"],
+    si:["Comunica resoluciones a través de su sede electrónica",
+        "Avisa de citas previas que tú has solicitado"],
+    no:["Nunca ingresa ni reclama dinero mediante un enlace por SMS",
+        "Nunca pide datos bancarios por mensaje"],
+    verificar:"Accede tú a la sede electrónica escribiendo la dirección, o pide cita en el 901 16 65 65." },
+  dgt: { nombre:"DGT / multas",
+    dominios:["dgt.es","sede.dgt.gob.es"],
+    si:["Notifica sanciones por correo postal o por la DEV (Dirección Electrónica Vial) si estás suscrito"],
+    no:["Nunca cobra multas mediante un enlace enviado por SMS",
+        "Nunca amenaza con embargo inmediato por mensaje"],
+    verificar:"Consulta tus multas en la sede de la DGT entrando tú, o llama al 060." },
+  electrica: { nombre:"Compañía de luz o gas",
+    dominios:["endesa.com","iberdrola.es","naturgy.es","repsol.es","totalenergies.es"],
+    si:["Avisa de facturas dentro de su área de cliente"],
+    no:["Nunca amenaza con corte inmediato si no pagas por un enlace en minutos",
+        "Nunca pide datos de tarjeta por SMS"],
+    verificar:"Entra en tu área de cliente desde la app oficial o llama al teléfono de tu factura en papel." },
+  tecnologica: { nombre:"Apple, Google, Microsoft, Amazon...",
+    dominios:["apple.com","icloud.com","google.com","microsoft.com","live.com","amazon.es","amazon.com","netflix.com"],
+    si:["Avisa de inicios de sesión y cambios en la cuenta"],
+    no:["Nunca pide la contraseña por mensaje",
+        "Nunca avisa de que tu cuenta se cerrará hoy salvo que actúes ya",
+        "Nunca pide pagar por un enlace acortado"],
+    verificar:"Entra en la cuenta desde la app o escribiendo la dirección oficial. Nunca desde el enlace del mensaje." },
+
+  familiar: { nombre:"Un familiar (\"Hola mamá, soy yo\")",
+    dominios:[],
+    si:["Un hijo o familiar puede cambiar de número de verdad, y eso es lo que hace creíble el fraude"],
+    no:["Un familiar de verdad no tiene problema en que le llames para confirmar",
+        "No urge un pago inmediato antes de poder hablar contigo",
+        "No insiste en seguir la conversación solo por escrito"],
+    verificar:"<b>Llama al número de siempre</b>, el que tienes guardado, no al nuevo. Si dice que perdió el móvil, llama igualmente o pregúntale algo que solo esa persona sepa. Este fraude funciona porque mezcla urgencia con cariño: párate y verifica antes de enviar nada." },
+
+  teleco: { nombre:"Movistar, Vodafone, Orange, Digi...",
+    dominios:["movistar.es","telefonica.es","vodafone.es","orange.es","digimobil.es","yoigo.com","masmovil.es"],
+    si:["Avisa de facturas y consumo dentro de su app o área de cliente"],
+    no:["Nunca pide datos de tarjeta por SMS para 'seguir dando servicio'",
+        "Nunca condiciona un regalo o descuento a rellenar un formulario enlazado",
+        "Nunca amenaza con dar de baja la línea hoy mismo"],
+    verificar:"Entra en la app oficial de tu operador o llama al número de atención al cliente que figura en tu factura. Los 'puntos que caducan' y las promociones urgentes son el gancho más usado." },
+
+  whatsapp: { nombre:"WhatsApp / código de verificación",
+    dominios:["whatsapp.com","web.whatsapp.com"],
+    si:["WhatsApp envía un código de 6 dígitos solo cuando eres tú quien registra la cuenta"],
+    no:["<b>Ese código no se comparte con nadie. Con nadie, nunca, bajo ninguna excusa.</b>",
+        "WhatsApp no te escribe por SMS pidiendo que reenvíes nada",
+        "Ningún amigo necesita tu código para nada"],
+    verificar:"Si alguien te pide el código diciendo que 'se lo mandaron por error', es que está intentando robarte la cuenta: tu número está registrándose en su móvil en ese momento. No lo envíes y avisa a esa persona por otra vía, porque probablemente le han robado la suya. Activa la verificación en dos pasos en WhatsApp: Ajustes › Cuenta › Verificación en dos pasos." },
+
+  bizum: { nombre:"Bizum / solicitud de pago",
+    dominios:["bizum.es"],
+    si:["Bizum funciona dentro de la app de tu banco, no por enlaces externos"],
+    no:["Nadie necesita que 'aceptes una solicitud' para <b>enviarte</b> dinero a ti",
+        "El banco no pide claves ni códigos para recibir un Bizum"],
+    verificar:"Lee siempre si la pantalla dice <b>enviar</b> o <b>solicitar</b>: el fraude consiste en disfrazar una solicitud de cobro como si fuera un ingreso. Si alguien te dice que te va a pagar y te llega una petición, estás a punto de pagar tú." },
+
+  segundamano: { nombre:"Wallapop, Vinted, Milanuncios...",
+    dominios:["wallapop.com","vinted.es","milanuncios.com"],
+    si:["La gestión del envío y el pago ocurre dentro de la propia app"],
+    no:["Un comprador real no necesita mandarte enlaces externos para 'gestionar el envío'",
+        "La plataforma nunca pide los datos de tu tarjeta para <b>ingresarte</b> dinero"],
+    verificar:"No salgas nunca de la app ni sigas la conversación por WhatsApp: ese es el primer paso del fraude. Si te piden la tarjeta para pagarte, es al revés de como funciona: para recibir dinero nunca hacen falta los datos de tu tarjeta." },
+
+  otro: { nombre:"Otro / no aparece en la lista",
+    dominios:[],
+    si:["Una comunicación legítima resiste que la verifiques por tu cuenta y con calma"],
+    no:["Nadie legítimo pide contraseñas, PIN ni códigos de verificación por mensaje",
+        "Nadie legítimo cobra ni ingresa dinero a través de un enlace acortado",
+        "Nadie legítimo te da un plazo de minutos u horas para actuar"],
+    verificar:"Regla universal, sirva para quien sirva: <b>verifica siempre por un canal que inicies tú</b>. Busca el teléfono o la web oficial por tu cuenta, escribe la dirección a mano, o usa la app que ya tenías instalada. Nunca uses los datos que vienen en el propio mensaje, porque son justo la parte que el estafador controla." }
+};
+
+/* Analiza el remitente por su ESTRUCTURA: no dice quién es, dice qué es. */
+function analizarRemitente(r){
+  var limpio = r.replace(/[\s\-().]/g,"");
+  var out = [];
+
+  // Móvil español personal
+  if (/^(\+34|0034|34)?[67]\d{8}$/.test(limpio)){
+    out.push(["r-mal","Número de móvil personal español",
+      "Los organismos y empresas serias no usan móviles personales para comunicaciones masivas: usan cabecera con su nombre o números de servicio. "+
+      "Una SIM de prepago cuesta unos euros, no exige identificación real en la práctica y se desecha en días. Es el remitente típico de una campaña de smishing."]);
+  }
+  // Fijo español
+  else if (/^(\+34|0034|34)?[89]\d{8}$/.test(limpio)){
+    out.push(["r-avisa","Número fijo español",
+      "Puede ser legítimo, pero también se falsifica con facilidad. No lo des por bueno: busca el número en la web oficial del organismo antes de fiarte."]);
+  }
+  // Número corto de servicio
+  else if (/^\d{4,6}$/.test(limpio)){
+    out.push(["r-info","Número corto de servicio",
+      "Los números cortos se contratan a los operadores y son más difíciles de conseguir, pero también los usan campañas comerciales y se pueden alquilar. No garantiza nada por sí solo."]);
+  }
+  // Internacional no español
+  else if (/^\+(?!34)\d{6,15}$/.test(limpio)){
+    out.push(["r-mal","Número extranjero",
+      "Un organismo español no te escribe desde un número de otro país. Señal muy fuerte de fraude."]);
+  }
+  // Cabecera alfanumérica
+  else if (/[a-zA-Z]/.test(r)){
+    out.push(["r-avisa","Nombre en vez de número (cabecera alfanumérica)",
+      "Aquí está la trampa más importante: <b>el nombre del remitente se puede falsificar</b>. Existen servicios que permiten enviar SMS poniendo el texto que quieras como emisor. "+
+      "Peor aún: si el nombre coincide con el de mensajes legítimos que ya recibiste, el móvil los agrupa <b>en el mismo hilo de conversación</b>, junto a los auténticos. "+
+      "Que aparezca «AEAT» o el nombre de tu banco no prueba absolutamente nada."]);
+  } else {
+    out.push(["r-info","Formato no reconocido",
+      "No he podido clasificar este remitente. Fíjate igualmente en el contenido y en el enlace."]);
+  }
+  return out;
+}
+
+/* Señales propias del canal SMS, que no aplican al correo */
+function senalesSMS(texto, enlaces){
+  var out = [];
+  var acortadosUsados = enlaces.filter(function(u){
+    return ACORTADORES.indexOf(registrable(dominioDe(u))) !== -1;
+  });
+
+  if (acortadosUsados.length){
+    out.push(["r-mal","Acortador en un SMS",
+      "En un SMS el acortador es casi obligatorio por el límite de caracteres, así que por sí solo no condena. Pero tiene un efecto perverso: "+
+      "<b>oculta el destino justo donde la pantalla es pequeña y no puedes previsualizar el enlace</b>. Un organismo oficial usa su dominio propio, aunque sea largo."]);
+    // Slug fabricado para aparentar oficialidad
+    acortadosUsados.forEach(function(u){
+      var slug = u.split("/").slice(-1)[0] || u.split("/").slice(-2)[0];
+      if (slug && /[A-Z]{3,}/.test(slug) && /[-_]/.test(slug)){
+        out.push(["r-mal","Slug fabricado para parecer oficial",
+          "La parte final del enlace («"+escaparHTML(slug)+"») está personalizada para aparentar un expediente o referencia oficial. "+
+          "<b>En un acortador, cualquiera puede escribir lo que quiera ahí.</b> No acredita absolutamente nada: es parte del disfraz."]);
+      }
+    });
+  }
+  if (!enlaces.length){
+    out.push(["r-info","Sin enlaces",
+      "No hay enlaces en el texto. Si el mensaje te pide llamar a un número, desconfía igual: el fraude por teléfono (vishing) funciona igual de bien."]);
+  }
+  // Importe concreto como cebo
+  var imp = texto.match(/\d{1,4}[.,]\d{2}\s?(€|EUR|euros)/i);
+  if (imp){
+    out.push(["r-avisa","Importe concreto como cebo",
+      "El importe «"+escaparHTML(imp[0])+"» parece muy específico y por eso resulta creíble, pero es el mismo para todas las víctimas de la campaña: "+
+      "está en la plantilla. Una cantidad pequeña y con céntimos está elegida para que no levante sospechas y para que compense el 'trámite'."]);
+  }
+  // Mensaje muy corto
+  if (texto.replace(/\s+/g," ").trim().length <= 200){
+    out.push(["r-info","Mensaje muy comprimido",
+      "El límite del SMS obliga a condensar el engaño: por eso desaparecen el saludo personalizado y las explicaciones, y queda solo el gancho y el enlace. "+
+      "La brevedad no es señal de legitimidad, es una restricción del canal."]);
+  }
+  return out;
+}
 
 function analizar(){
   var texto = $("entrada").value;
@@ -191,7 +437,19 @@ function analizar(){
       marcasMencionadas.push(marca.trim());
   });
 
-  pintar(texto, rangos, porFamilia, enlaces, marcasMencionadas);
+  // 4) Extras del modo SMS
+  var extraSMS = null;
+  if (MODO === "sms"){
+    var rem = $("remitente").value.trim();
+    extraSMS = {
+      remitente: rem,
+      analisisRem: rem ? analizarRemitente(rem) : null,
+      canal: CANALES[$("suplantado").value] || null,
+      senales: senalesSMS(texto, enlaces)
+    };
+  }
+
+  pintar(texto, rangos, porFamilia, enlaces, marcasMencionadas, extraSMS);
 }
 
 function extraerEnlaces(texto){
@@ -213,9 +471,33 @@ function registrable(dom){
   return p.length <= 2 ? dom : p.slice(-2).join(".");
 }
 
-function pintar(texto, rangos, porFamilia, enlaces, marcas){
+function pintar(texto, rangos, porFamilia, enlaces, marcas, extraSMS){
   var cont = $("resultado");
   var html = "";
+
+  // --- Remitente (solo modo SMS) ---
+  if (extraSMS && extraSMS.analisisRem){
+    html += '<h2 class="seccion">De dónde viene</h2>';
+    html += '<p class="seccion-desc">Qué tipo de remitente es y qué implica. Ojo: esto no identifica a nadie.</p>';
+    extraSMS.analisisRem.forEach(function(a){
+      html += '<div class="remit ' + a[0] + '">' +
+        '<div class="tipo">' + escaparHTML(a[1]) + '</div>' +
+        '<div class="val">' + escaparHTML(extraSMS.remitente) + '</div>' +
+        '<div class="txt">' + a[2] + '</div></div>';
+    });
+  }
+
+  // --- Canal oficial (solo modo SMS, si eligió organismo) ---
+  if (extraSMS && extraSMS.canal){
+    var c = extraSMS.canal;
+    html += '<div class="canal"><h3>Cómo se comunica de verdad ' + escaparHTML(c.nombre) + '</h3>';
+    c.si.forEach(function(s){ html += '<div class="linea si"><span class="p">✓</span><span>' + s + '</span></div>'; });
+    c.no.forEach(function(s){ html += '<div class="linea no"><span class="p">✕</span><span>' + s + '</span></div>'; });
+    html += '<div class="verificar"><b>Cómo salir de dudas:</b> ' + c.verificar + '</div>';
+    if (c.dominios.length)
+      html += '<div class="verificar">Sus dominios legítimos: <code>' + c.dominios.join('</code>, <code>') + '</code></div>';
+    html += '</div>';
+  }
 
   // --- Texto resaltado ---
   html += '<h2 class="seccion">El mensaje, marcado</h2>';
@@ -241,7 +523,7 @@ function pintar(texto, rangos, porFamilia, enlaces, marcas){
       }).join("");
       html += '<div class="senal f-' + fam + '">' +
         '<div class="cab"><span class="emo">' + def.emo + '</span><h3>' + escaparHTML(def.nombre) + '</h3></div>' +
-        '<div class="porque">' + escaparHTML(def.porque) + '</div>' +
+        '<div class="porque">' + def.porque + '</div>' +
         '<div class="trozos">' + trozos + '</div></div>';
     });
   }
@@ -256,11 +538,35 @@ function pintar(texto, rangos, porFamilia, enlaces, marcas){
     });
   }
 
+  // --- Señales propias del canal SMS ---
+  if (extraSMS && extraSMS.senales.length){
+    html += '<h2 class="seccion">Lo propio del SMS</h2>';
+    html += '<p class="seccion-desc">Señales que solo tienen sentido en este canal.</p>';
+    extraSMS.senales.forEach(function(s){
+      html += '<div class="remit ' + s[0] + '">' +
+        '<div class="tipo">' + escaparHTML(s[1]) + '</div>' +
+        '<div class="txt">' + s[2] + '</div></div>';
+    });
+  }
+
   // --- Careo marca vs enlace (la señal estrella) ---
   var desajuste = detectarDesajuste(enlaces, marcas);
 
   // --- Resumen final ---
   html += construirResumen(porFamilia, enlaces, marcas, desajuste);
+
+  // --- Qué hacer ahora (solo modo SMS) ---
+  if (extraSMS){
+    html += '<div class="acciones"><h3>Qué hacer ahora</h3><ol>' +
+      '<li><b>No pulses el enlace</b> ni respondas al mensaje. Responder confirma que tu número está activo.</li>' +
+      '<li><b>Verifica por tu cuenta</b> si te queda duda: entra en la web o app oficial escribiendo tú la dirección, o llama a un teléfono que hayas obtenido por tu cuenta. Nunca uses los datos del propio mensaje.</li>' +
+      '<li><b>Reenvía el SMS al <code>7726</code></b> (gratuito). Es el número que las operadoras usan en España para recibir reportes de smishing y bloquear las campañas.</li>' +
+      '<li><b>Bloquea y reporta el número</b> como spam desde la propia app de mensajes.</li>' +
+      '<li><b>Repórtalo al INCIBE</b>, en el <code>017</code> o en su web, que es el canal oficial de ciberseguridad ciudadana.</li>' +
+      '<li>Si suplanta a un organismo, muchos tienen <b>buzón propio de suplantaciones</b> donde comunicarlo.</li>' +
+      '<li><b>Si ya pulsaste y metiste datos:</b> llama de inmediato a tu banco para bloquear la tarjeta, cambia las contraseñas afectadas y activa la verificación en dos pasos. Cuanto antes, mejor.</li>' +
+      '</ol></div>';
+  }
 
   html += '<div class="aviso"><span>⚠</span><span>Esto analiza <b>patrones conocidos</b>, no entiende el mensaje como un humano. La ausencia de señales no garantiza que sea seguro: un engaño bien redactado puede pasar limpio. Y si hay un enlace, no lo abras para comprobarlo — pásalo antes por un expansor de enlaces.</span></div>';
 
@@ -368,10 +674,54 @@ var EJEMPLO = "¡Hola! Espero que estés muy bien.\n\n" +
 "📩 modely.orzn.app/y7opdn5l/\n\n" +
 "¡Muchísimas gracias por tu apoyo! ❤️";
 
+// --- Ejemplo de SMS real (el caso AEAT) ---
+var EJEMPLO_SMS = {
+  remitente: "+34643636395",
+  suplantado: "aeat",
+  texto: "AGENCIA TRIBUTARIA. Reembolso de impuestos de (311.29€). Encuentre su formulario de reembolso en el enlace: https://bit.ly/AEAT-F451371"
+};
+
+// Poblar el desplegable de organismos
+(function(){
+  var sel = $("suplantado");
+  Object.keys(CANALES).forEach(function(k){
+    var o = document.createElement("option");
+    o.value = k; o.textContent = CANALES[k].nombre;
+    sel.appendChild(o);
+  });
+})();
+
+// Cambio de modo
+function ponerModo(m){
+  MODO = m;
+  document.querySelectorAll(".modo").forEach(function(b){
+    b.className = "modo" + (b.dataset.modo === m ? " activo" : "");
+  });
+  $("camposSMS").style.display = (m === "sms") ? "block" : "none";
+  $("entrada").placeholder = (m === "sms")
+    ? "Copia el texto del SMS tal cual, con el enlace incluido."
+    : "Copia el correo o DM tal cual: asunto, cuerpo, enlaces... todo junto. La herramienta separa y analiza lo que encuentre.";
+  $("btnEjemplo").textContent = (m === "sms") ? "Cargar SMS de ejemplo" : "Cargar ejemplo real";
+  $("resultado").style.display = "none";
+}
+document.querySelectorAll(".modo").forEach(function(b){
+  b.addEventListener("click", function(){ ponerModo(b.dataset.modo); });
+});
+
 $("btnAnalizar").addEventListener("click", analizar);
-$("btnEjemplo").addEventListener("click", function(){ $("entrada").value = EJEMPLO; analizar(); });
+$("btnEjemplo").addEventListener("click", function(){
+  if (MODO === "sms"){
+    $("remitente").value = EJEMPLO_SMS.remitente;
+    $("suplantado").value = EJEMPLO_SMS.suplantado;
+    $("entrada").value = EJEMPLO_SMS.texto;
+  } else {
+    $("entrada").value = EJEMPLO;
+  }
+  analizar();
+});
 $("btnLimpiar").addEventListener("click", function(){
-  $("entrada").value = ""; $("resultado").style.display = "none"; $("entrada").focus();
+  $("entrada").value = ""; $("remitente").value = ""; $("suplantado").value = "";
+  $("resultado").style.display = "none"; $("entrada").focus();
 });
 </script>
 </body>
